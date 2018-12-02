@@ -16,7 +16,7 @@ class Validate
     /**
      * @param UserValidator $validator
      */
-    public function __construct(RecaptchaValidator $validator)
+    public function __construct(QQCaptchaValidator $validator)
     {
         $this->validator = $validator;
     }
@@ -25,7 +25,7 @@ class Validate
     {
         if ($command instanceof RegisterUser) {
             $this->validator->assertValid([
-                'g-recaptcha-response' => array_get($command->data, 'attributes.g-recaptcha-response')
+                'qqcaptcha-ticket' => array_get($command->data, 'attributes.qqcaptcha-ticket')
             ]);
         }
         return $next($command);

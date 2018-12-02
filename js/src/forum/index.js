@@ -3,7 +3,7 @@ import { extend } from 'flarum/extend';
 import SignUpModal from 'flarum/components/SignUpModal';
 
 app.initializers.add('branchzero-qqcaptcha', () => {
-  const isAvail = () => typeof TencentCaptcha !== 'undefined';
+  const isAvail = () => typeof window.TencentCaptcha !== 'undefined';
   const qqcaptchaTicketValue = m.prop();
   const qqcaptchaRandstrValue = m.prop();
   const qqcaptchaID = m.prop();
@@ -11,22 +11,29 @@ app.initializers.add('branchzero-qqcaptcha', () => {
   function load() {
     const aid = app.forum.attribute('qqcaptchaAid');
 
-    if (!key) return;
+    if (!aid) return;
 
     const render = () => {
       if (this.$('.qqcaptcha').length) return;
 
+      const register_btn = this.$('[type="submit"]');
       const el = $('<div class="Form-group qqcaptcha">')
-        .insertBefore(this.$('[type="submit"]').parent())[0];
-
+        .insertBefore(register_btn.parent())[0];
+      
       if (el && !$(el).data('qqcaptcha-rendred')) {
-        qqcaptchaID(new TencentCaptcha(el, {
+        const register_btn_title = app.translator.translations['core.forum.sign_up.submit_button'];
+        const fake_btn = $('<button id="TencentCaptcha" type="button" class="Button Button--primary Button--block" title="' + register_btn_title + '"><span class="Button-label">' + register_btn_title + '</span></button>');
+        register_btn.hide();
+        $(el).append(fake_btn);
+        const obj = new TencentCaptcha(document.getElementById('TencentCaptcha'), {
           aid: aid,
           callback: res => {
             qqcaptchaTicketValue(res.ticket);
             qqcaptchaRandstrValue(res.randstr);
+            register_btn.click();
           },
-        }));
+        });
+        qqcaptchaID(obj);
         $(el).data('qqcaptcha-rendred', true);
         m.redraw();
       }
@@ -69,7 +76,7 @@ app.initializers.add('branchzero-qqcaptcha', () => {
 
   extend(SignUpModal.prototype, 'onerror', function () {
     if (isAvail()) {
-      TencentCaptcha.reset(qqcaptchaID());
+      qqcaptchaID().destroy();
     }
   });
 });

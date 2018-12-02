@@ -14,5 +14,8 @@ class QQCaptchaValidator extends AbstractValidator
             'required',
             'qqcaptcha',
         ],
+        'qqcaptcha-randstr' => [
+            'required'
+        ]
     ];
 }

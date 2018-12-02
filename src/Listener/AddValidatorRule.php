@@ -9,6 +9,7 @@ use Flarum\User\UserValidator;
 use Flarum\User\Command\RegisterUser;
 use Flarum\Settings\SettingsRepositoryInterface;
 use Branchzero\QQCaptcha\QQCaptchaValidator;
+use Psr\Http\Message\ServerRequestInterface;
 
 class AddValidatorRule {
     /**
@@ -24,8 +25,8 @@ class AddValidatorRule {
     public function __construct(SettingsRepositoryInterface $settings)
     {
         $this->settings = $settings;
-        $this->aid = $this->settings->get('branchzero-qqcaptcha.aid');
-        $this->secretKey = $this->settings->get('branchzero-qqcaptcha.secret_key');
+        $this->aid = $this->settings->get('flarum-ext-qqcaptcha.aid');
+        $this->secretKey = $this->settings->get('flarum-ext-qqcaptcha.secret_key');
     }
 
     public function subscribe(Dispatcher $events)
@@ -39,18 +40,20 @@ class AddValidatorRule {
             if ($event->type instanceof QQCaptchaValidator) {
                 $event->validator->addExtension(
                     'qqcaptcha',
-                    function($attribute, $value, $parameters) use ($secret) {
-                        return $this->verify($value);
+                    function($attribute, $value, $parameters) {
+                        return $this->verify(
+                            $value,
+                            $request->getAttribute('qqcaptcha-randstr'),
+                            array_get($request->getServerParams(), 'REMOTE_ADDR', '127.0.0.1')
+                        );
                     }
                 );
             }
         }
     }
 
-    private function verify($ticket, $randStr, ServerRequestInterface $request)
+    private function verify($ticket, $randStr, $ipAddress)
     {
-        $ipAddress = array_get($request->getServerParams(), 'REMOTE_ADDR', '127.0.0.1');
-
         $result = $this->fetch('https://ssl.captcha.qq.com/ticket/verify', [
             'aid' => $this->aid,
             'AppSecretKey' => $this->secretKey,
