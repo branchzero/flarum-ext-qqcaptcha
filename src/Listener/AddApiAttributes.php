@@ -28,7 +28,6 @@ class AddApiAttributes {
 
     public function prepareApiAttributes(Serializing $event) {
         if ($event->isSerializer(ForumSerializer::class)) {
-            // var_dump($this->settings->get('branchzero-qqcaptcha'));
             $event->attributes['qqcaptchaAid'] = $this->settings->get('flarum-ext-qqcaptcha.aid');
         }
     }
