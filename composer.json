@@ -1,0 +1,37 @@
+{
+    "name": "branchzero/flarum-ext-qqcaptcha",
+    "description": "QQCAPTCHA for flarum",
+    "type": "flarum-extension",
+    "keywords": ["captcha", "validate", "verify"],
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "BranchZero Sun",
+            "email": "branchzero@gmail.com"
+        }
+    ],
+    "support": {
+        "issues": "https://github.com/branchzero/flarum-ext-qqcaptcha/issues",
+        "source": "https://github.com/branchzero/flarum-ext-qqcaptcha"
+    },
+    "require": {
+        "flarum/core": "^0.1.0-beta.8"
+    },
+    "autoload": {
+        "psr-4": {
+            "Branchzero\\QQCaptcha\\": "src/"
+        }
+    },
+    "extra": {
+        "flarum-extension": {
+            "title": "腾讯防水墙",
+            "icon": {
+                "image": "icon.svg",
+                "backgroundColor": "#fff",
+                "backgroundSize": "contain",
+                "backgroundPosition": "center",
+                "backgroundRepeat": "no-repeat"
+            }
+        }
+    }
+}
