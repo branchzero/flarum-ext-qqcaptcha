@@ -25,7 +25,8 @@ class Validate
     {
         if ($command instanceof RegisterUser) {
             $this->validator->assertValid([
-                'qqcaptcha-ticket' => array_get($command->data, 'attributes.qqcaptcha-ticket')
+                'qqcaptcha-ticket'  => array_get($command->data, 'attributes.qqcaptcha-ticket'),
+                'qqcaptcha-randstr' => array_get($command->data, 'attributes.qqcaptcha-randstr')
             ]);
         }
         return $next($command);

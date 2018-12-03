@@ -1,0 +1,2 @@
+validation:
+    qqcaptcha: '验证码验证失败，请重试'

@@ -3,13 +3,11 @@
 namespace Branchzero\QQCaptcha\Listener;
 
 use Illuminate\Contracts\Events\Dispatcher;
-use Illuminate\Contracts\Bus\Dispatcher as BusDispatcher;
 use Flarum\Foundation\Event\Validating;
 use Flarum\User\UserValidator;
 use Flarum\User\Command\RegisterUser;
 use Flarum\Settings\SettingsRepositoryInterface;
 use Branchzero\QQCaptcha\QQCaptchaValidator;
-use Psr\Http\Message\ServerRequestInterface;
 
 class AddValidatorRule {
     /**
@@ -40,11 +38,10 @@ class AddValidatorRule {
             if ($event->type instanceof QQCaptchaValidator) {
                 $event->validator->addExtension(
                     'qqcaptcha',
-                    function($attribute, $value, $parameters) {
+                    function($attribute, $value, $parameters) use ($event) {
                         return $this->verify(
                             $value,
-                            $request->getAttribute('qqcaptcha-randstr'),
-                            array_get($request->getServerParams(), 'REMOTE_ADDR', '127.0.0.1')
+                            array_get($event->validator->getData(), 'qqcaptcha-randstr')
                         );
                     }
                 );
@@ -52,24 +49,24 @@ class AddValidatorRule {
         }
     }
 
-    private function verify($ticket, $randStr, $ipAddress)
+    private function verify($ticket, $randStr)
     {
         $result = $this->fetch('https://ssl.captcha.qq.com/ticket/verify', [
             'aid' => $this->aid,
             'AppSecretKey' => $this->secretKey,
             'Ticket' => $ticket,
             'Randstr' => $randStr,
-            'UserIP' => $ipAddress
+            'UserIP' => array_get($_SERVER, 'REMOTE_ADDR', '127.0.0.1')
         ]);
 
         if (empty($result) || !isset($result['response'])) {
             return false;
         }
-        if ($result['response'] == 0) {
-            return false;
+        if ($result['response'] == 1) {
+            return true;
         }
 
-        return true;
+        return false;
     }
 
     function fetch($url, $data = [], $rawHeaders = [], $isJson = true, $returnHeader = false)

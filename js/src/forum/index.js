@@ -7,9 +7,12 @@ app.initializers.add('branchzero-qqcaptcha', () => {
   const qqcaptchaTicketValue = m.prop();
   const qqcaptchaRandstrValue = m.prop();
   const qqcaptchaID = m.prop();
+  const hasLoad = m.prop();
 
   function load() {
     const aid = app.forum.attribute('qqcaptchaAid');
+    if (hasLoad()) return;
+    hasLoad(true);
 
     if (!aid) return;
 
@@ -25,14 +28,16 @@ app.initializers.add('branchzero-qqcaptcha', () => {
         const fake_btn = $('<button id="TencentCaptcha" type="button" class="Button Button--primary Button--block" title="' + register_btn_title + '"><span class="Button-label">' + register_btn_title + '</span></button>');
         register_btn.hide();
         $(el).append(fake_btn);
-        const obj = new TencentCaptcha(document.getElementById('TencentCaptcha'), {
-          aid: aid,
-          callback: res => {
-            qqcaptchaTicketValue(res.ticket);
-            qqcaptchaRandstrValue(res.randstr);
-            register_btn.click();
-          },
-        });
+        const obj = new TencentCaptcha(
+          document.getElementById('TencentCaptcha'), 
+          aid,
+          function (res) {
+            if (res.ret === 0) {
+              qqcaptchaTicketValue(res.ticket);
+              qqcaptchaRandstrValue(res.randstr);
+              register_btn.click();
+            }
+          });
         qqcaptchaID(obj);
         $(el).data('qqcaptcha-rendred', true);
         m.redraw();
